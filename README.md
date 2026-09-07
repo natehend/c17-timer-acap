@@ -36,10 +36,10 @@ The C1710's datasheet settles the two things this app depends on:
   exact 4:1 aspect ratio.
 
 The C1710 runs an **NXP i.MX 8M Mini**, which is **aarch64** - so
-`C17_Timer_<version>_aarch64.eap` is the build to install on a C17. An
-armv7hf build is produced too, so the same package can go on an older
-speaker (e.g. a C1210) to exercise the buttons, events and API without a
-display.
+`C17_Timer_<version>_aarch64.eap` is the build to install on a C17. The
+whole C17 Series (C1710, C1720) is aarch64, per Axis's device list under
+[Prepare your devices](https://help.axis.com/en-us/axis-audio-manager-pro),
+item 4, so aarch64 is the only architecture this app is built for.
 
 ## How it actually works
 
@@ -760,12 +760,6 @@ script as this project's sibling **NWS Weather Alerts** ACAP.)
 
 ```sh
 docker build --platform=linux/amd64 --build-arg ARCH=aarch64 --tag c17timer-aarch64 . && docker create --name c17-extract --platform=linux/amd64 c17timer-aarch64 && docker cp c17-extract:/opt/app/C17_Timer_0_1_0_aarch64.eap ./C17_Timer_0_1_0_aarch64.eap && docker rm c17-extract
-```
-
-**armv7hf** (older speakers, for testing the non-display parts):
-
-```sh
-docker build --platform=linux/amd64 --build-arg ARCH=armv7hf --tag c17timer-armv7hf . && docker create --name c17-extract --platform=linux/amd64 c17timer-armv7hf && docker cp c17-extract:/opt/app/C17_Timer_0_1_0_armv7hf.eap ./C17_Timer_0_1_0_armv7hf.eap && docker rm c17-extract
 ```
 
 Adjust the filename to the current version in `manifest.json`, or just

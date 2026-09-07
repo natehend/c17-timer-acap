@@ -1,14 +1,17 @@
 #!/bin/bash
 # C17 Timer - Build Script
 #
-# Double-click this file in Finder to build the .eap install packages for
-# both Axis architectures (aarch64 and armv7hf). You can also run it from
-# Terminal with `./build.command`.
+# Double-click this file in Finder to build the .eap install package. You
+# can also run it from Terminal with `./build.command`.
 #
-# The AXIS C1710 (C17 Series Network Display Speaker) runs an NXP i.MX 8M
-# Mini, so **aarch64** is the build to install on a C17. armv7hf is built
-# too so the same package can go on an older speaker (e.g. a C1210) for
-# testing the button/event/API side without a display.
+# The AXIS C1710 and C1720 (C17 Series Network Display Speaker) run an NXP
+# i.MX 8M Mini, so **aarch64** is the only architecture this app is built
+# for - the whole C17 series is aarch64, per Axis's own device list at
+# https://help.axis.com/en-us/axis-audio-manager-pro (Prepare your devices,
+# item 4). An armv7hf build used to be produced as well, purely so the
+# button/event/API side could be exercised on an older speaker such as a
+# C1210 without a display; that was never signed and never installed on a
+# real C17, so it is no longer built.
 #
 # Requires Docker Desktop, installed and running, with network access
 # (it pulls the Axis ACAP Native SDK image the first time).
@@ -22,9 +25,8 @@
 #      turns out to be broken.
 #   3. Builds a Docker image for aarch64 and extracts the resulting .eap
 #      into this folder.
-#   4. Does the same for armv7hf.
-#   5. Cleans up the temporary Docker containers used for extraction.
-#   6. Bumps the patch version number (the last digit) in
+#   4. Cleans up the temporary Docker container used for extraction.
+#   5. Bumps the patch version number (the last digit) in
 #      app/manifest.json by one, so the NEXT time this script runs it
 #      automatically builds the next version - no need to edit the
 #      version by hand before each build.
@@ -139,7 +141,6 @@ build_arch() {
 }
 
 build_arch aarch64
-build_arch armv7hf
 
 # --- Bump the patch (last) version number for next time, in place, ---
 # --- touching only that one line.                                  ---
@@ -152,8 +153,7 @@ sed -i '' "s/\"version\": *\"${VERSION}\"/\"version\": \"${NEXT_VERSION}\"/" "$M
 echo "=========================================="
 echo " Build complete!"
 echo "=========================================="
-echo "Files created in this folder:"
-echo "  C17_Timer_${VERSION_UNDERSCORE}_aarch64.eap   <- install this one on a C17"
-echo "  C17_Timer_${VERSION_UNDERSCORE}_armv7hf.eap"
+echo "File created in this folder:"
+echo "  C17_Timer_${VERSION_UNDERSCORE}_aarch64.eap   <- install this on a C17"
 echo
 echo "Next build will automatically use version ${NEXT_VERSION}."

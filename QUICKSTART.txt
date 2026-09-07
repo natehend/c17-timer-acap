@@ -1,0 +1,81 @@
+# C17 Timer - Quick Start
+
+> This is an independent, community-developed ACAP package created to show what can be done with Axis devices when you think outside the box. It is not an official Axis product and is not affiliated with, endorsed by, or supported by Axis Communications AB. Use at your own risk.
+
+A countdown timer that runs on an **AXIS C17 Series Network Display Speaker** (e.g. the AXIS C1710). The countdown appears on the speaker's own 1920x480 display, changing color as it runs down, and plays one of the speaker's audio clips when it finishes.
+
+Three ways to control it, all driving the same single timer:
+
+- **The buttons on an AXIS C8310 Volume Controller** wired into the speaker's I/O connector.
+- **HTTP API** - plain GET URLs you can paste into any other system.
+- **The speaker's own events engine** - the timer shows up as conditions, and rules can start and stop it through an HTTP notification action.
+
+## What it does
+
+- **Volume up / down set the timer.** Each press adds or subtracts a configurable amount - up and down have their own, both one minute by default. While a timer is running, they extend or shorten the current run instead.
+- **Four assignable buttons.** Button 1, Button 2, Button 3 and Mute can each be set to Start/Pause, Start only, Pause only, Stop and reset, a quick timer with its own duration, an add-time button, Finish now, or a pure rule engine trigger. Out of the box: Button 1 is a 5 minute quick timer, Button 2 is 10 minutes, Button 3 is Start/Pause and Mute is Stop and reset.
+- **Color changes as the countdown runs.** Set as many color changes as you like (up to five) - by default green from the start, amber at 30 seconds left, red at 10. Each one has its own background color, text color and text.
+- **Live display preview.** Every color is previewed using the exact same calculation the real screen uses, in the same format as AXIS Audio Manager Pro's own visual profile preview - same proportions, same text size and weight, same AXIS lockup at the bottom.
+- **A finished message and a sound.** Custom text, its own colors, its own scroll settings, shown for as long as you want.
+- **A sound at every stage.** A clip when the timer starts, one as it crosses each threshold, and one when it finishes.
+- **Copy-paste API.** Every request is listed in the app itself with a Copy button, in both the "another system on the network" and the "this device's own rules" form.
+- **Virtual C8310.** A clickable photo of the real controller, for testing what each button does without walking to the wall.
+
+## Installing it
+
+1. **Install the app.** On the speaker's **Apps** page, upload `C17_Timer_<version>_aarch64.eap` - the C17 Series runs an NXP i.MX 8M Mini, so aarch64 is the right build.
+2. **Open it.** The app's **Open** button goes to `https://<speaker-ip>/local/c17timer/ui`, using the speaker's own login. It is also reachable directly at `http://<speaker-ip>:8082/`.
+
+## Configuring it
+
+The app has a left navigation column. **Home** is the timer itself. Under **Timer**:
+
+1. **Duration** - the default duration and a maximum. The timer always returns to the default once it finishes or is reset, so a quick timer or a dialled-in adjustment lasts only for that run.
+2. **Normal** - the colors a countdown starts in, and the sound the timer starts with.
+3. **Paused** - what the display shows and plays while a timer is paused.
+4. **Thresholds** - the colors it switches to as it runs down, each with a live preview and its own optional sound.
+5. **Finished** - the message shown when it reaches zero, how long it stays up, and the sound it makes.
+
+Under **Settings**: **C8310** (what each assignable button does, and how much Volume up and Volume down change the timer by) and **Display Sharing** (whether to hand the screen back when idle, and when paused).
+
+Under **Integrate** there is an **API** page listing every request with a Copy button, and a **Rules** page covering both directions of the events engine.
+
+Changes take effect immediately. No restart, and saving keeps your place on the page.
+
+## Using it from the events engine
+
+**To make a rule react to the timer** - go to **System > Events > Rules**, add a rule, and look under **Application** in the condition picker:
+
+- **C17 Timer: Timer event** - Started, Paused, Resumed, Stopped or Finished.
+- **C17 Timer: Timer running** - true for the whole time a timer is counting. Pair this with the "...while the rule is active" actions.
+- **C17 Timer: Threshold reached** - fires as the countdown crosses each threshold. Each is named after the time it fires at, e.g. "Threshold 1 - 0:30 left".
+- **C17 Timer: Button pressed** - any of the six C8310 buttons.
+
+**To make a rule control the timer** - an ACAP can add conditions to the rule engine but not actions, so use the built-in **Notification > Send notification through HTTP** action pointed at the same URL anything else would use. Copy the verb you want from the app's **API** page, and put a device account in the action's username and password fields - the device calling itself still authenticates.
+
+## Using it from another system
+
+Open the **API** page in the app. Every request is a plain GET that returns JSON, at one address:
+
+```
+https://<speaker-ip>/local/c17timer/ui?api=start
+```
+
+Durations accept either seconds (`300`) or clock time (`5:00`).
+
+**Every request needs a device login.** The app has no password of its own and no unauthenticated port - its own web server listens on loopback only, so the device's login covers everything. Two things to set in your client:
+
+1. **Basic authentication** with a device account. Without credentials you get `401 Unauthorized`.
+2. **Accept the device certificate.** Axis devices present a self-signed device-ID certificate, so a verifying client reports `SELF_SIGNED_CERT_IN_CHAIN`. Use Postman's *Disable SSL certificate verification*, or `curl -k`, or trust the Axis device ID CA.
+
+```
+curl -k -u <user>:<pass> 'https://<speaker-ip>/local/c17timer/ui?api=quick&seconds=300'
+```
+
+**Use `https`, not `http`.** The device offers Basic authentication only over HTTPS; over plain HTTP it asks for Digest instead and rejects Basic. Sending Basic to the `http://` address returns `401 Unauthorized` even with correct credentials, which looks like a wrong password. If you must use `http`, switch the client to Digest (`curl --digest`, or Digest Auth in Postman).
+
+## If the buttons do the wrong thing
+
+The six C8310 buttons are pre-set to I/O ports 1000-1005, the numbering confirmed on a real C8310 pairing. If your unit's buttons don't behave as expected, press each one and check the app log - every press logs the port number that fired - then set the matching `*Port` override in the app's native Settings page (turn on **Show hidden parameters**).
+
+For full technical details, real-hardware notes and troubleshooting, see `README.md`.

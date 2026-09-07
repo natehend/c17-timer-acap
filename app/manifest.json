@@ -1,0 +1,43 @@
+{
+    "schemaVersion": "2.0.0",
+    "acapPackageConf": {
+        "setup": {
+            "friendlyName": "C17 Timer",
+            "appName": "c17timer",
+            "vendor": "nate@hendfamily.com",
+            "vendorId": "7fed18ed42",
+            "vendorUrl": "https://hendfamily.com",
+            "runMode": "respawn",
+            "version": "0.1.47",
+            "compatibleOsVersions": [
+                {
+                    "min": "12.10.68",
+                    "max": "13"
+                }
+            ]
+        },
+        "configuration": {
+            "paramConfig": [
+                { "name": "Button1Port", "default": "1000", "type": "hidden:string" },
+                { "name": "Button2Port", "default": "1001", "type": "hidden:string" },
+                { "name": "Button3Port", "default": "1002", "type": "hidden:string" },
+                { "name": "VolUpPort", "default": "1003", "type": "hidden:string" },
+                { "name": "VolDownPort", "default": "1004", "type": "hidden:string" },
+                { "name": "MutePort", "default": "1005", "type": "hidden:string" }
+            ],
+            "settingPage": "ui",
+            "reverseProxy": [
+                {
+                    "apiPath": "ui",
+                    "target": "http://localhost:8082/",
+                    "access": "admin"
+                }
+            ]
+        }
+    },
+    "resources": {
+        "dbus": {
+            "requiredMethods": ["com.axis.HTTPConf1.VAPIXServiceAccounts1.GetCredentials"]
+        }
+    }
+}

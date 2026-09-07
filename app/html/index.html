@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<!--
+  settingPage has to be a static file under html/, so this hands off to
+  the app's real UI at /local/c17timer/ui - the reverse proxy entry in
+  manifest.json, which is the only route to it.
+
+  There is deliberately no direct-port fallback any more: the app's own
+  web server binds to loopback, so this proxied path is the sole way in
+  and the only one that carries the device's login. See "Web UI" in
+  README.md.
+-->
+<script>
+  window.location.replace("/local/c17timer/ui");
+</script>
+<title>C17 Timer</title>
+</head>
+<body>
+<p>Opening the C17 Timer... if nothing happens, go to
+<code>/local/c17timer/ui</code> on this device.</p>
+</body>
+</html>

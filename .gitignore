@@ -1,0 +1,24 @@
+# Built installers. These are published as GitHub Releases rather than
+# committed: git keeps every version of a binary forever, and a new pair
+# is produced on every single build.
+*.eap
+older-versions/
+
+# Leftovers from building outside Docker. The normal build runs entirely
+# inside the SDK container, so these only appear if someone compiles by
+# hand in this folder.
+*.o
+app/debug/
+app/c17timer
+app/package.conf
+app/param.conf
+build-output-*/
+
+# Runtime state the app writes on the device. The directory itself is
+# kept (the app expects it to exist); its contents are per-install and
+# must never be committed.
+app/localdata/*
+!app/localdata/.gitkeep
+
+# macOS Finder metadata
+.DS_Store

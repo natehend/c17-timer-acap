@@ -866,6 +866,16 @@ use `build.command`, which discovers it itself.
   reverse proxy offers no unauthenticated level - admin, operator and
   viewer all require a login - and the whole UI, settings included, sits
   behind that one path, so admin is the right level for it.
+- **A device with a system HTTP proxy configured** (System > Network)
+  hands `http_proxy` to every app it starts, and libcurl honors it by
+  default - so the app's own calls to the device's loopback address
+  (`127.0.0.12`, for the display and media clips) went out to the proxy
+  instead, which cannot reach it and answers **503**. The pages still
+  load and the buttons still work; only the display and the sounds fail,
+  and the app log shows `display: notification failed: HTTP 503` with a
+  Squid (or similar) error page in the body. Fixed in 0.1.48: local calls
+  bypass the proxy unconditionally, and the app logs the proxy it found
+  (credentials redacted) the first time it makes one.
 - **The web UI port is fixed at 8082** to match the manifest's proxy
   target. It is loopback-only and nobody types it, but a clash with
   something else on the device would need both changed together and a

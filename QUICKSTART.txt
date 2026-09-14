@@ -24,7 +24,7 @@ Three ways to control it, all driving the same single timer:
 ## Installing it
 
 1. **Install the app.** On the speaker's **Apps** page, upload `C17_Timer_<version>_aarch64.eap` - the C17 Series runs an NXP i.MX 8M Mini, so aarch64 is the right build.
-2. **Open it.** The app's **Open** button goes to `https://<speaker-ip>/local/c17timer/ui`, using the speaker's own login. It is also reachable directly at `http://<speaker-ip>:8082/`.
+2. **Open it.** The app's **Open** button goes to `https://<speaker-ip>/local/c17timer/ui`, using the speaker's own login. That is the only way in - the app's own port is loopback-only.
 
 ## Configuring it
 

@@ -8,7 +8,7 @@
             "vendorId": "7fed18ed42",
             "vendorUrl": "https://hendfamily.com",
             "runMode": "respawn",
-            "version": "0.1.48",
+            "version": "0.1.49",
             "compatibleOsVersions": [
                 {
                     "min": "12.10.68",

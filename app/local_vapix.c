@@ -10,6 +10,8 @@
 
 #include "app_config.h" // APP_NAME
 
+static void note_proxy_environment_once(void);
+
 // Cached "user:password". Fetched lazily on first use and kept for the
 // life of the process - see the header's doc comment for why (the
 // display path would otherwise do a D-Bus round trip every second).
@@ -107,6 +109,19 @@ static char* local_vapix_request(const char* path,
     struct curl_slist* headers = NULL;
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
+    // NEVER through a proxy. libcurl honors http_proxy / HTTP_PROXY /
+    // ALL_PROXY from the environment by default, and a device with a
+    // system HTTP proxy configured (System > Network) hands that
+    // variable to every app it starts. Left alone, curl then sends this
+    // request for the device's OWN loopback address out to the corporate
+    // proxy, which cannot reach 127.0.0.12 and answers 503 - and every
+    // display update and clip on that device fails with a Squid error
+    // page while the app itself looks perfectly healthy. Seen on a
+    // customer device in exactly that state. An empty proxy string is
+    // libcurl's documented way to say "no proxy, whatever the
+    // environment says".
+    curl_easy_setopt(curl, CURLOPT_PROXY, "");
+    note_proxy_environment_once();
     // The local service account is documented as supporting basic auth
     // on 127.0.0.12; ANY lets curl negotiate digest instead if a
     // firmware version prefers it, rather than hardcoding one and
@@ -158,6 +173,34 @@ static char* local_vapix_request(const char* path,
         buf.data = calloc(1, 1);
     }
     return buf.data;
+}
+
+// Says once, in the app's own log, that a system proxy is present in the
+// environment and is being bypassed for local calls. The value can carry
+// a username and password (http://user:pass@proxy:3128), so only the
+// part after any '@' is logged.
+static void note_proxy_environment_once(void) {
+    static bool noted = false;
+    if (noted)
+        return;
+    noted = true;
+
+    static const char* const vars[] = {"http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY",
+                                       "all_proxy", "ALL_PROXY"};
+    for (size_t i = 0; i < G_N_ELEMENTS(vars); i++) {
+        const char* v = getenv(vars[i]);
+        if (!v || !v[0])
+            continue;
+        const char* at   = strrchr(v, '@');
+        const char* show = at ? at + 1 : v;
+        syslog(LOG_INFO,
+              "local_vapix: %s=%s%s is set in this app's environment (the device has a system "
+              "HTTP proxy configured); it is bypassed for the device's own address " LOCAL_VAPIX_HOST,
+              vars[i],
+              at ? "<credentials>@" : "",
+              show);
+        return;
+    }
 }
 
 char* local_vapix_get(const char* path, char* errbuf, size_t errlen) {
